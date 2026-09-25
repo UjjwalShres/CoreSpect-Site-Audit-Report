@@ -1,0 +1,652 @@
+/* ===============================
+   HEADER / BRANDING
+================================ */
+
+.cs-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: fit-content;
+}
+
+.cs-header-container {
+  background-color: #2a2e30;
+  margin: 20px 20px 20px 0;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  border-radius: 20px;
+}
+
+.cs-logo {
+  width: 38px;
+  height: 38px;
+}
+
+.cs-brand-name {
+  font-size: 48px;
+  font-weight: 600;
+  color: white;
+  font-family: "DM Serif Display", serif;
+}
+
+.cs-header img {
+  height: 70px;
+}
+
+/* ===============================
+   TABS (custom styled)
+================================ */
+
+.cs-tabs {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.cs-tab {
+  text-decoration: none;
+  padding: 5px 5px 2px 5px;
+  color: #f0f0f1;
+  font-weight: 400;
+  transition: 0.15s;
+  font-size: 20px;
+}
+
+.cs-tab:focus{
+  outline: none;
+  color: #ff914d;
+  box-shadow: none;
+  border-bottom: 2px solid #ff914d;
+}
+
+.cs-tab:hover {
+  color: #ff914d;
+  border-bottom: 2px solid #ff914d;
+}
+
+.cs-tab-active {
+  font-weight: 600;
+  color: #ff914d;
+  border-bottom: 2px solid #ff914d;
+}
+
+/* ===============================
+   CARDS
+================================ */
+
+.cs-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cs-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #2a2e30;
+  position: relative;
+  z-index: 1;
+}
+
+.cs-card h3 {
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.cs-value {
+  font-size: 32px;
+  font-weight: 600;
+  font-family: "DM Serif Display", serif;
+  line-height: normal;
+}
+
+.cs-card h3,
+.cs-card .cs-value,
+.cs-tooltip {
+  position: relative;
+  z-index: 1;
+}
+
+.cs-card-good::before {
+  content: "✓";
+  color: #ceeac2;
+  font-size: 150px;
+  font-family: "DM Serif Display", serif;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cs-card-warn::before {
+  content: "!";
+  color: #ffd0b3;
+  font-size: 150px;
+  font-family: "DM Serif Display", serif;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cs-card-bad::before {
+  content: "X";
+  color: #ffc6c6;
+  font-size: 150px;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Tooltip wrapper */
+.cs-tooltip {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+/* Small icon */
+.cs-tooltip-icon {
+  font-size: 18px;
+  font-family: "DM Serif Display", serif;
+  padding: 3px 10px;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.cs-tooltip-icon-good {
+    color: yellowgreen;
+    border: 1px solid yellowgreen;
+}
+
+.cs-tooltip-icon-warn {
+    color: #ff914d;
+    border: 1px solid #ff914d;
+}
+
+.cs-tooltip-icon-bad {
+    color: red;
+    border: 1px solid red;
+}
+
+/* Hidden tooltip content */
+.cs-tooltip-content {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  width: 180px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #2a2e30;
+  color: #2a2e30;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.2s ease;
+  z-index: 3;
+}
+
+.cs-tooltip-content .good{
+  color: yellowgreen;
+}
+
+.cs-tooltip-content .warn{
+  color: orange;
+}
+
+.cs-tooltip-content .bad{
+  color: red;
+}
+
+.cs-tooltip-content p{
+  margin: 0;
+}
+
+/* Show on hover */
+.cs-tooltip-icon:hover + .cs-tooltip-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===============================
+   TABLE
+================================ */
+.table-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 72px 1fr 1fr;
+  gap: 16px;
+}
+
+.cs-table {
+  grid-column: 1 / span 4;
+  border-radius: 12px;
+  border: 2px solid #2a2e30 !important;
+  overflow: hidden;
+}
+
+.cs-table th {
+  background: #f6f7f7;
+  font-weight: 600;
+  padding: 10px;
+  color: white !important;
+  background-color: #2a2e30;
+  position: sticky;
+}
+
+.cs-table td {
+  padding: 9px 10px;
+}
+
+.cs-table td {
+  border-collapse: collapse;
+}
+
+.cs-table tr:nth-child(even) {
+  background: #f5f5f5;
+}
+
+.cs-table tr:nth-child(odd) {
+  background: white;
+}
+
+.cs-total-row {
+  background: #ff914d !important;
+  font-weight: 600;
+}
+
+/* ===============================
+   ALERT BOXES
+================================ */
+.orphan-tables {
+  grid-column: 5 / span 6;
+  padding: 20px;
+  border: 2px solid #2a2e30;
+  border-radius: 12px;
+  height: fit-content;
+  background-color: white;
+  color: #2a2e30 !important;
+}
+
+/* --------------------- bar chart ---------------------------*/
+.bar-chart-section{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.bar-chart-section h3{
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: #666;
+  text-align: center;
+}
+
+.bar-chart{
+  grid-column: 1 / span 3;
+  border: 2px solid #2a2e30;
+  padding: 20px 20px 40px 20px;
+  border-radius: 12px;
+}
+
+.chart-container {
+    display: flex;
+    align-items: flex-end; /* Align bars to the bottom */
+    gap: 10px;
+    border-bottom: 1px solid #2a2e30;
+}
+
+.chart-y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* distribute labels evenly */
+    text-align: right;
+    margin-right: 10px;
+    height: 300px; /* same as chart-bars */
+}
+
+.chart-y-axis .y-label {
+    position: relative;
+    font-size: 12px;
+    width: 40px;
+    padding-right: 5px;
+}
+
+.chart-y-axis{
+  border-right: 1px solid #2a2e30;
+}
+
+.chart-bars {
+    display: flex;
+    align-items: flex-end; /* bars start from bottom */
+    gap: 26px;
+    height: 300px; /* same as y-axis */
+    flex: 1;
+    position: relative;
+}
+
+.bar {
+    background-color: #ff914d;
+    width: 150px;
+    display: flex;
+    align-items: flex-end; /* bar value sits on top */
+    justify-content: center;
+    position: relative;
+}
+
+.bar-value {
+    font-size: 12px;
+    color: #000;
+    margin-bottom: 4px;
+}
+
+.bar-label-group{
+  position: absolute;
+  width: 100%;
+  display: flex;
+  gap: 26px;
+  bottom: -27px;
+}
+
+.bar-label{
+  width: 150px;
+}
+
+.bar-side-section{
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/*===================Security tab =================================*/
+.cs-security-large-section{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 72px 1fr 1fr;
+  gap: 16px;
+}
+
+.cs-suspicious-list{
+  grid-column: 1 / span 4;
+  border: 2px solid #2a2e30;
+  padding: 20px 20px 40px 20px;
+  border-radius: 12px;
+}
+
+.cs-suspicious-list ul li{
+  border: 1px solid #2a2e30;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #f7decf;
+}
+
+.cs-suspicious-list ul li:hover {
+  cursor: pointer;
+  background-color: #ff914d;
+}
+
+.cs-security-side-section{
+  grid-column: 5 / span 6;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/*===================Files tab =================================*/
+.cs-files-large-section{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 72px 1fr 1fr;
+  gap: 16px;
+}
+
+.cs-log-list{
+  grid-column: 1 / span 4;
+  border: 2px solid #2a2e30;
+  padding: 20px 20px 40px 20px;
+  border-radius: 12px;
+}
+
+.cs-log-list ul li{
+  border: 1px solid #2a2e30;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #f7decf;
+}
+
+.cs-log-list ul li:hover {
+  cursor: pointer;
+  background-color: #ff914d;
+}
+
+.cs-files-side-section{
+  grid-column: 5 / span 6;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #2a2e30;
+  border-radius: 12px;
+  gap: 18px;
+  background-color: white;
+}
+
+.cs-gauge {
+  width: 100%;
+  max-width: 400px;
+  margin: 10px auto;
+}
+
+.cs-gauge svg {
+  width: 100%;
+  height: auto;
+}
+
+.cs-gauge-text {
+  font-size: 8px;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.cs-gauge-value {
+  color: #2a2e30;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: "DM Serif Display", serif;
+  line-height: normal;
+}
+
+/*===================Plugins tab =================================*/
+.cs-table-container{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.cs-first-table-card{
+  grid-column: 1 / span 2;
+  border: 2px solid #2a2e30;
+  padding: 20px 20px 40px 20px;
+  border-radius: 12px;
+}
+
+.cs-second-table-card{
+  grid-column: 3 / span 4;
+  border: 2px solid #2a2e30;
+  padding: 20px 20px 40px 20px;
+  border-radius: 12px;
+}
+
+.cs-plugin-table, .cs-theme-table {
+  width: 100%;
+  height: auto;
+}
+
+.cs-plugin-table{
+  border-collapse: collapse;
+}
+
+.cs-plugin-table th, .cs-theme-table th{
+  background-color: #2a2e30;
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+.cs-plugin-table td, .cs-theme-table td{
+  background-color: white;
+  color: #2a2e30;
+  padding: 10px;
+}
+
+.cs-plugin-table .cs-plugin-active, .cs-theme-table .cs-theme-active{
+  color: green;
+}
+
+.cs-plugin-table .cs-plugin-inactive, .cs-theme-table .cs-theme-inactive{
+  color: #e0722e;
+}
+
+/*===================Export tab =================================*/
+.cs-export-container{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.cs-export-large-sec{
+  grid-column: 1 / span 3;
+  border: 2px solid #2a2e30;
+  padding: 20px 20px 40px 20px;
+  border-radius: 12px;
+}
+
+.cs-export-small-sec{
+  grid-column: 4 / span 4;
+  border: 2px solid #2a2e30;
+  padding: 20px 20px 40px 20px;
+  border-radius: 12px;
+}
+
+.cs-export-container h2{
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0;
+  color: #2a2e30;
+  margin-bottom: 25px;
+  font-family: "DM Serif Display", serif;
+  line-height: normal;
+
+}
+
+.cs-export-small-sec h2{
+    text-align: center;
+}
+
+.cs-links-sec{
+  padding: 5px 15px;
+  border: #2a2e30 solid 2px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+}
+
+.cs-links-sec:hover{
+  background-color: white;
+  cursor: pointer;
+}
+
+.cs-links-sec p {
+  font-size: 20px;
+  color: #2a2e30;
+  z-index: 1;
+  text-align: center;
+}
+
+.cs-links-sec span::before{
+  font-size: 90px;
+  font-family: "DM Serif Display", serif;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cs-links-sec .icon-alert::before{
+  content: "!";
+  color: #ffd0b3;
+  right: 20%;
+  top: 44%;
+}
+
+.cs-links-sec .icon-question::before{
+  content: "?";
+  color: #ff914d;
+  right: 19%;
+  top: 59%;
+}
+
+.cs-links-sec .icon-tick::before{
+  content: "✓";
+  color: #ceeac2;
+  right: 17%;
+  top: 75%;
+}
+
+
+
+/* .cs-export-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.cs-export-options label {
+  background: #fff;
+  border: 2px solid #2a2e30;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+} */
+
+.cs-export-options input[type=radio]:checked::before{
+  content: "✓";
+  color: #e0722e;
+  font-size: 25px;
+  border-radius: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  background: none;
+  line-height: 0;
+}
+
+.cs-export-options label {
+  margin-right: 15px;
+}
+
+.cs-export-actions{
+  margin-top: 20px;
+}
+/* Selected state */
+/* .cs-export-options input:checked + span,
+.cs-export-options label:has(input:checked) {
+  border-color: #ff914d;
+  background: #fff4ec;
+} */
