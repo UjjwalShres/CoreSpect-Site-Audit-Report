@@ -54,7 +54,7 @@ CoreSpect Site Audit & Report does not collect, transmit, or store any data outs
 
 1. Upload the `corespect-site-audit-report` folder to the `/wp-content/plugins/` directory, or install the plugin directly through the WordPress admin under Plugins > Add New.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Go to **CoreSpect** in the admin sidebar to view your report.
+3. Go to **Tools > CoreSpect** in the admin sidebar to view your report.
 
 == Frequently Asked Questions ==
 

@@ -11,7 +11,7 @@ class CoreSpect_DB {
     public static function get_db_stats() {
         global $wpdb;
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- live table sizes are the entire point of a site-health report; caching would show stale data. The full report is already cached for 5 minutes via the cs_last_report transient.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- live table sizes are the entire point of a site-health report; caching would show stale data. The full report is already cached for 5 minutes via the corespect_last_report transient.
         $tables = $wpdb->get_results("SHOW TABLE STATUS", ARRAY_A);
 
         $data = [];
@@ -104,11 +104,11 @@ class CoreSpect_DB {
     public static function get_post_revisions() {
         global $wpdb;
 
-        $count = wp_cache_get('cs_post_revisions', 'corespect');
+        $count = wp_cache_get('corespect_post_revisions', 'corespect');
         if (false === $count) {
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- no core WP API returns a revision count; result is cached below.
             $count = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}posts WHERE post_type='revision'");
-            wp_cache_set('cs_post_revisions', $count, 'corespect', 60);
+            wp_cache_set('corespect_post_revisions', $count, 'corespect', 60);
         }
 
         return $count;
@@ -117,11 +117,11 @@ class CoreSpect_DB {
     public static function get_transients() {
         global $wpdb;
 
-        $count = wp_cache_get('cs_transients_count', 'corespect');
+        $count = wp_cache_get('corespect_transients_count', 'corespect');
         if (false === $count) {
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- no core WP API returns a transient count; result is cached below.
             $count = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE '_transient_%'");
-            wp_cache_set('cs_transients_count', $count, 'corespect', 60);
+            wp_cache_set('corespect_transients_count', $count, 'corespect', 60);
         }
 
         return $count;
@@ -130,11 +130,11 @@ class CoreSpect_DB {
     public static function get_spam_comments() {
         global $wpdb;
 
-        $count = wp_cache_get('cs_spam_comments', 'corespect');
+        $count = wp_cache_get('corespect_spam_comments', 'corespect');
         if (false === $count) {
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- no core WP API returns a spam comment count; result is cached below.
             $count = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->comments} WHERE comment_approved='spam'");
-            wp_cache_set('cs_spam_comments', $count, 'corespect', 60);
+            wp_cache_set('corespect_spam_comments', $count, 'corespect', 60);
         }
 
         return $count;

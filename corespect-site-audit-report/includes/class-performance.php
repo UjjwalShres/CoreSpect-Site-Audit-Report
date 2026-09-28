@@ -11,20 +11,23 @@ class CoreSpect_Performance {
         $total_size = 0;
         $resources = [];
 
-        $content_dirs = [WP_CONTENT_DIR]; // Only scan wp-content for scripts/styles
+        // Helper function to safely get local file path.
+        // Maps the asset's URL onto WP_CONTENT_DIR via content_url(),
+        // rather than assuming the site's URL structure mirrors ABSPATH —
+        // that assumption breaks whenever WP_CONTENT_DIR/WP_CONTENT_URL
+        // is customized (moved content dir, CDN-served assets, etc.).
+        $content_url = content_url('/');
 
-        // Helper function to safely get local file path
-        $get_local_file = function($src) use ($content_dirs) {
-            $relative = str_replace(site_url('/'), '', $src);
-            $path = ABSPATH . $relative;
+        $get_local_file = function($src) use ($content_url) {
 
-            // Only include if in wp-content
-            foreach ($content_dirs as $dir) {
-                if (strpos(realpath($path), realpath($dir)) === 0 && file_exists($path)) {
-                    return $path;
-                }
+            if (strpos($src, $content_url) !== 0) {
+                return false; // not a wp-content asset (e.g. wp-includes core script)
             }
-            return false;
+
+            $relative = str_replace($content_url, '', $src);
+            $path = WP_CONTENT_DIR . '/' . $relative;
+
+            return file_exists($path) ? $path : false;
         };
 
         // Scripts

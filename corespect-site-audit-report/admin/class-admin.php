@@ -6,14 +6,12 @@ define('CORESPECT_ADMIN_URL', plugin_dir_url(__FILE__));
 class CoreSpect_Admin {
 
     public static function init() {
-        add_menu_page(
+        add_management_page(
             'CoreSpect Site Audit & Report',
             'CoreSpect',
             'manage_options',
             'corespect-site-audit-report',
-            [__CLASS__, 'render_dashboard'],
-            'dashicons-analytics',
-            3
+            [__CLASS__, 'render_dashboard']
         );
     }
 
@@ -24,11 +22,11 @@ class CoreSpect_Admin {
     }
 
     private static function get_report() {
-        $report = get_transient('cs_last_report');
+        $report = get_transient('corespect_last_report');
 
         if (!$report) {
             $report = CoreSpect_Builder::generate();
-            set_transient('cs_last_report', $report, 300);
+            set_transient('corespect_last_report', $report, 300);
         }
 
         return $report;
@@ -840,17 +838,16 @@ private static function scan_logs() {
 private static function scan_temp() {
 
     $folders = [
-        'cache',
-        'tmp',
-        'temp',
-        'wp-content/cache',
-        'wp-content/litespeed'
+        ABSPATH . 'cache',
+        ABSPATH . 'tmp',
+        ABSPATH . 'temp',
+        WP_CONTENT_DIR . '/cache',
+        WP_CONTENT_DIR . '/litespeed'
     ];
 
     $total = 0;
 
-    foreach ($folders as $folder) {
-        $path = ABSPATH . $folder;
+    foreach ($folders as $path) {
         if (is_dir($path)) {
             $total += self::folder_size($path);
         }
@@ -1255,7 +1252,18 @@ private static function export_pdf($data) {
 
     self::render_html_template($data);
 
-    echo '<script>window.onload = function () { window.print(); };</script>';
+    wp_register_script(
+        'corespect-print',
+        CORESPECT_URL . 'admin/js/print.js',
+        [],
+        '1.0.0',
+        true
+    );
+    wp_enqueue_script('corespect-print');
+
+    // As with the stylesheet above, this document never calls wp_footer(),
+    // so the enqueued script is printed manually at this point.
+    wp_print_scripts('corespect-print');
 
     exit;
 }
@@ -1270,160 +1278,20 @@ private static function render_html_template($data) {
     <meta charset="utf-8">
     <title>CoreSpect Site Audit &amp; Report</title>
 
-    <style>
-    /* ===============================
-            GLOBAL
-            ================================ */
-    body {
-        margin: 0;
-        font-family: Inter, Arial, sans-serif;
-        background: #F0F0F1;
-        color: #e5e7eb;
-    }
+    <?php
+        wp_register_style(
+            'corespect-export-style',
+            CORESPECT_URL . 'admin/css/export-style.css',
+            [],
+            '1.0.0'
+        );
+        wp_enqueue_style('corespect-export-style');
 
-    /* ===============================
-            HEADER
-            ================================ */
-    .header {
-        padding: 40px;
-        text-align: center;
-        background-color: #fff;
-        color: #111;
-    }
-
-    h2,
-    h3 {
-        color: #181C25;
-    }
-
-    .card h3 {
-        color: #e5e7eb;
-    }
-
-    .header h1 {
-        margin: 0;
-        font-size: 34px;
-        font-weight: 700;
-    }
-
-    .header small {
-        opacity: .8;
-    }
-
-    .cs-logo {
-        width: 78px;
-        height: 78px;
-    }
-
-    /* ===============================
-            LAYOUT
-            ================================ */
-    .container {
-        padding: 40px;
-        max-width: 1200px;
-        margin: auto;
-    }
-
-    .section {
-        margin-bottom: 50px;
-    }
-
-    .section h2 {
-        font-size: 20px;
-        margin-bottom: 15px;
-        border-left: 5px solid #ff914d;
-        padding-left: 10px;
-    }
-
-    /* ===============================
-            CARDS
-            ================================ */
-    .cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-    }
-
-    .cards-margin {
-        margin-top: 15px;
-    }
-
-    .card {
-        background: #181c25;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 0 0 1px #222;
-    }
-
-    .card h3 {
-        margin: 0 0 8px;
-        font-size: 14px;
-        opacity: .7;
-    }
-
-    .card p {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    /* ===============================
-            TABLE
-            ================================ */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-        background: #181c25;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    th,
-    td {
-        padding: 10px 12px;
-        border-bottom: 1px solid #222;
-        font-size: 14px;
-    }
-
-    th {
-        text-align: left;
-        background: #20242f;
-    }
-
-    tr:last-child td {
-        border-bottom: none;
-    }
-
-    .total {
-        font-weight: 700;
-        color: #ff914d;
-    }
-
-    /* badges */
-    .badge-ok {
-        color: #22c55e;
-        font-weight: 600;
-    }
-
-    .badge-bad {
-        color: #ef4444;
-        font-weight: 600;
-    }
-
-    .badge-warn {
-        color: #f59e0b;
-        font-weight: 600;
-    }
-
-    .footer {
-        text-align: center;
-        padding: 30px;
-        opacity: .5;
-        font-size: 12px;
-        color: #181C25;
-    }
-    </style>
+        // This document is generated directly by an admin-post.php handler
+        // and never calls wp_head(), so the enqueued stylesheet is printed
+        // manually at this exact point instead.
+        wp_print_styles('corespect-export-style');
+    ?>
 </head>
 
 <body>
@@ -1776,7 +1644,7 @@ private static function export_html($data) {
 
 /* style enqueue */
 add_action('admin_enqueue_scripts', function($hook){
-if($hook !== 'toplevel_page_corespect-site-audit-report') return;
+if($hook !== 'tools_page_corespect-site-audit-report') return;
 
 wp_enqueue_style(
 'corespect-admin',
