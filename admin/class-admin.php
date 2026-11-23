@@ -262,16 +262,22 @@ class CoreSpect_Admin {
        ORPHANS
     ====================== */
 
-    $orphans = CoreSpect_DB::get_orphan_tables();
+    $leftover = [];
 
-    if(empty($orphans)){
-        echo '<div class="orphan-tables">✔ No orphan tables detected</div>';
-    } else {
-        echo '<div class="orphan-tables"><strong>Orphan Tables Detected:</strong><ul>';
-        foreach($orphans as $table){
-            echo '<li>'.esc_html($table).'</li>';
+    foreach (CoreSpect_DB::get_plugin_tables() as $entry) {
+        if ($entry['status'] === 'leftover') {
+            $leftover[$entry['plugin']][] = $entry['table'];
         }
-        echo '</ul></div>';
+    }
+
+    if (empty($leftover)) {
+        echo '<div class="orphan-tables">✔ No tables from missing plugins detected</div>';
+    } else {
+        echo '<div class="orphan-tables"><strong>Tables possibly left behind by plugins that are no longer installed:</strong><ul>';
+        foreach ($leftover as $plugin => $tables) {
+            echo '<li><strong>'.esc_html($plugin).'</strong> ('.esc_html(count($tables)).(count($tables) === 1 ? ' table' : ' tables').'): '.esc_html(implode(', ', $tables)).'</li>';
+        }
+        echo '</ul><p>This is a best-effort match based on table names. Take a backup and check with your developer before removing anything.</p></div>';
     }
 
     echo '</div>';
@@ -284,34 +290,12 @@ class CoreSpect_Admin {
     $report = self::get_report();
     $data = $report['performance'];
     
-    $req_health  = CoreSpect_Health::requests($data['requests']);
-    $size_health = CoreSpect_Health::page_size_mb($data['page_size_mb']);
     $cache_state = $data['cache_state'] ?? 'bad';
     $php_health = CoreSpect_Health::php_version($data['php_version']);
-    $memory_health = CoreSpect_Health::memory_limit_mb($data['memory_limit']);
+    $memory_health = CoreSpect_Health::memory_limit_mb($data['memory_limit_mb'] ?? null);
 
         echo '<div class="cs-card-grid">';
 
-        self::card(
-            'Requests',
-            $data['requests'],
-            $req_health['state'],
-            [
-                'good' => '< 60',
-                'warn' => '60 – 120',
-                'bad'  => '> 120'
-            ]
-        );
-        self::card(
-            'Page Size',
-            $data['page_size_mb'] . ' MB',
-            $size_health['state'],
-            [
-                'good' => '< 2MB',
-                'warn' => '2MB – 4MB',
-                'bad'  => '> 4MB'
-            ]
-        );
         self::card(
             'Cache',
             $data['cache_plugin'],
@@ -329,7 +313,7 @@ class CoreSpect_Admin {
 
 ?> <div class="bar-chart-section">
     <div class="bar-chart">
-        <h3>Largest Resources</h3>
+        <h3>Largest Plugin &amp; Theme Files</h3>
 
         <div class="chart-container">
             <?php
@@ -342,7 +326,7 @@ class CoreSpect_Admin {
                     // ['name' => 'extra.css', 'size' => 1572864],       // 1.5 MB
                     // ['name' => 'extra-large.css', 'size' => 9097152],   
                     //     ];
-                    $max_size = max(array_column($largest, 'size')); // largest file size
+                    $max_size = max(array_column($largest, 'size') ?: [1]); // largest file size (guard: no files found)
                     $y_steps = 6; // number of horizontal lines on Y-axis
                     $step_value = ceil($max_size / $y_steps); // size per step
                     ?>
@@ -370,7 +354,7 @@ class CoreSpect_Admin {
 
                 <div class="bar-label-group">
                     <?php foreach($largest as $label): ?>
-                    <span class="bar-label"><?php echo esc_html($label['name']); ?></span>
+                    <span class="bar-label" title="<?php echo esc_attr($label['path'] ?? ''); ?>"><?php echo esc_html($label['name']); ?></span>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -392,8 +376,8 @@ class CoreSpect_Admin {
             );
 
             self::card(
-                'Memory Usage',
-                $data['memory_limit'] . 'B',
+                'PHP Memory Limit',
+                $data['memory_limit'],
                 $memory_health['state'],
                 [
                     'good' => '>= 256MB',
@@ -452,16 +436,17 @@ class CoreSpect_Admin {
     echo '</div>';
 
     echo '<div class="cs-security-large-section">
-    <div class="cs-suspicious-list"><h3>Suspicious Files</h3>';
+    <div class="cs-suspicious-list"><h3>Files Worth Reviewing</h3>';
 
-    if ($data['suspicious']) {
+    if (!empty($data['review_files'])) {
+        echo '<p>PHP files do not normally belong in the uploads folder. If you do not recognise these, ask your developer or host to check them.</p>';
         echo '<ul>';
-        foreach ($data['suspicious'] as $file) {
-            echo '<li>'.esc_html($file).'</li>';
+        foreach ($data['review_files'] as $file) {
+            echo '<li>'.esc_html($file['path']).' ('.esc_html(size_format($file['size'])).')</li>';
         }
         echo '</ul>';
     } else {
-        echo 'No suspicious patterns found';
+        echo 'No PHP files found in the uploads folder';
     }
 
     echo '</div>
@@ -511,7 +496,7 @@ class CoreSpect_Admin {
         'updates' => self::check_updates(),
         'firewall' => self::detect_firewall(),
         'login' => self::check_login_security(),
-        'suspicious' => self::scan_suspicious_files(),
+        'review_files' => self::scan_uploads_php_files(),
         'debug_mode' => self::check_debug_mode(),
         //'debug_log'  => self::check_debug_log(),
         'file_edit'  => self::check_file_edit()
@@ -589,32 +574,55 @@ class CoreSpect_Admin {
     return $issues;
     }
 
-    private static function scan_suspicious_files() {
+    /**
+     * PHP files inside the uploads folder. Uploads should only hold media and
+     * documents, so executable PHP files there are worth a second look.
+     * Plugin and theme code is deliberately NOT scanned: legitimate code uses
+     * functions like eval() and base64_decode(), so a text match produces
+     * mostly false alarms.
+     */
+    private static function scan_uploads_php_files() {
 
-    $suspects = [];
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator(ABSPATH)
-    );
+        $uploads = wp_upload_dir();
+        $base    = $uploads['basedir'] ?? '';
 
-    $patterns = ['base64_decode(', 'eval(', 'gzinflate(', 'shell_exec('];
-
-    foreach ($iterator as $file) {
-
-        if ($file->getExtension() !== 'php') continue;
-
-        $content = @file_get_contents($file->getPathname());
-
-        foreach ($patterns as $p) {
-            if (strpos($content, $p) !== false) {
-                $suspects[] = $file->getFilename();
-                break;
-            }
+        if (empty($base) || !is_dir($base)) {
+            return [];
         }
 
-        if (count($suspects) >= 10) break;
-    }
+        $php_extensions = ['php', 'php3', 'php4', 'php5', 'php7', 'phtml', 'phar'];
+        $base_path      = wp_normalize_path($base);
+        $found          = [];
 
-    return $suspects;
+        try {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($base, FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $file) {
+
+                if (!$file->isFile()) continue;
+
+                if (!in_array(strtolower($file->getExtension()), $php_extensions, true)) continue;
+
+                // Ignore the tiny "Silence is golden" index.php files that
+                // WordPress and many plugins place in folders.
+                if (strtolower($file->getFilename()) === 'index.php' && $file->getSize() < 100) continue;
+
+                $found[] = [
+                    'path'   => 'uploads/' . ltrim(substr(wp_normalize_path($file->getPathname()), strlen($base_path)), '/'),
+                    'size'   => $file->getSize(),
+                    'reason' => 'PHP file inside the uploads folder'
+                ];
+
+                if (count($found) >= 20) break;
+            }
+
+        } catch (Exception $e) {
+            // unreadable folder: report what could be read
+        }
+
+        return $found;
     }
 
     private static function check_debug_mode() {
@@ -1403,18 +1411,6 @@ private static function render_html_template($data) {
 
             <div class="cards">
                 <div class="card">
-                    <h3>Requests</h3>
-                    <p><?php echo esc_html($perf['requests']); ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>Page Size</h3>
-                    <p><?php echo esc_html($perf['page_size_mb']); ?> MB</p>
-                </div>
-            </div>
-
-            <div class="cards cards-margin">
-                <div class="card">
                     <h3>Cache</h3>
                     <p><?php echo esc_html($perf['cache_plugin']); ?></p>
                 </div>
@@ -1425,23 +1421,22 @@ private static function render_html_template($data) {
                 </div>
 
                 <div class="card">
-                    <h3>Memory Usage</h3>
+                    <h3>PHP Memory Limit</h3>
                     <p><?php echo esc_html($perf['memory_limit']); ?></p>
                 </div>
             </div>
 
-            <h3>Largest Resources</h3>
+            <h3>Largest Plugin &amp; Theme Files</h3>
             <table>
                 <tr>
-                    <th>Resource</th>
+                    <th>File</th>
                     <th>Size</th>
                 </tr>
 
                 <?php foreach($perf['largest_resources'] as $t): ?>
                 <tr>
-                    <?php $resource_size = round($t['size']/(1024*1024), 2) ?>
-                    <td><?php echo esc_html($t['name']); ?></td>
-                    <td><?php echo esc_html($resource_size); ?> MB</td>
+                    <td><?php echo esc_html($t['path'] ?? $t['name']); ?></td>
+                    <td><?php echo esc_html(size_format($t['size'])); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </table>
@@ -1494,15 +1489,16 @@ private static function render_html_template($data) {
                 </div>
             </div>
 
-            <h3>Suspicious Files</h3>
-            <?php if ($s['suspicious']): ?>
+            <h3>Files Worth Reviewing</h3>
+            <?php if (!empty($s['review_files'])): ?>
+            <p>PHP files do not normally belong in the uploads folder. If you do not recognise these, ask your developer or host to check them.</p>
             <ul>
-                <?php foreach ($s['suspicious'] as $file): ?>
-                <li><?php echo esc_html($file); ?></li>
+                <?php foreach ($s['review_files'] as $file): ?>
+                <li><?php echo esc_html($file['path']); ?> (<?php echo esc_html(size_format($file['size'])); ?>)</li>
                 <?php endforeach; ?>
             </ul>
             <?php else: ?>
-            <p>No suspicious patterns found</p>
+            <p>No PHP files found in the uploads folder</p>
             <?php endif; ?>
         </div>
         <?php
