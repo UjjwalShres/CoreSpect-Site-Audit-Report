@@ -23,7 +23,7 @@ class CoreSpect_Data {
             'transients' => CoreSpect_DB::get_transients(),
             'spam_comments' => CoreSpect_DB::get_spam_comments(),
 
-            'orphans' => CoreSpect_DB::get_orphan_tables()
+            'plugin_tables' => CoreSpect_DB::get_plugin_tables()
 
         ];
     }
@@ -32,14 +32,7 @@ class CoreSpect_Data {
 
         $raw = CoreSpect_Performance::get_performance_data();
 
-        $size_mb = round($raw['size'] / 1024 / 1024, 2);
-
         return [
-
-            'requests' => $raw['requests'],
-
-            'page_size_bytes' => $raw['size'],
-            'page_size_mb' => $size_mb,
 
             'largest_resources' => $raw['largest'],
 
@@ -48,7 +41,8 @@ class CoreSpect_Data {
 
             'php_version' => $raw['php_version'],
 
-            'memory_limit' => $raw['memory_limit']
+            'memory_limit'    => $raw['memory_limit'],
+            'memory_limit_mb' => $raw['memory_limit_mb']
 
         ];
 

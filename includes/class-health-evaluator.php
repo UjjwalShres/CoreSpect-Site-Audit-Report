@@ -75,15 +75,14 @@ class CoreSpect_Health {
     }
 
     public static function memory_limit_mb($mb) {
-        return self::compare($mb, 128, 256);
-    }
 
-    public static function requests($count) {
-        return self::compare($count, 60, 120);
-    }
+        // Unknown limit: neutral, not a pass or a fail.
+        if ($mb === null) {
+            return self::result('warn');
+        }
 
-    public static function page_size_mb($mb) {
-        return self::compare($mb, 2, 4);
+        // Higher is better: 256MB+ good, 128MB+ warning, below that bad.
+        return self::compare((int) $mb, 256, 128, true);
     }
 
 

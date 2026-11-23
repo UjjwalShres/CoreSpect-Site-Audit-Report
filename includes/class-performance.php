@@ -5,67 +5,91 @@ class CoreSpect_Performance {
 
     public static function get_performance_data() {
 
-        global $wp_scripts, $wp_styles;
+        // What PHP actually allows (not WP_MEMORY_LIMIT, which is only a
+        // configured ceiling for front-end requests).
+        $memory_raw = ini_get('memory_limit');
+        $unlimited  = ((string) $memory_raw === '-1');
+        $memory_mb  = null;
+        $memory_txt = 'Unknown';
 
-        $requests = 0;
-        $total_size = 0;
-        $resources = [];
-
-        // Helper function to safely get local file path.
-        // Maps the asset's URL onto WP_CONTENT_DIR via content_url(),
-        // rather than assuming the site's URL structure mirrors ABSPATH —
-        // that assumption breaks whenever WP_CONTENT_DIR/WP_CONTENT_URL
-        // is customized (moved content dir, CDN-served assets, etc.).
-        $content_url = content_url('/');
-
-        $get_local_file = function($src) use ($content_url) {
-
-            if (strpos($src, $content_url) !== 0) {
-                return false; // not a wp-content asset (e.g. wp-includes core script)
-            }
-
-            $relative = str_replace($content_url, '', $src);
-            $path = WP_CONTENT_DIR . '/' . $relative;
-
-            return file_exists($path) ? $path : false;
-        };
-
-        // Scripts
-        foreach ($wp_scripts->registered as $script) {
-            if (!empty($script->src)) {
-                $file = $get_local_file($script->src);
-                if ($file) {
-                    $size = filesize($file);
-                    $resources[] = ['name' => basename($file), 'size' => $size];
-                    $total_size += $size;
-                    $requests++;
-                }
+        if ($unlimited) {
+            $memory_mb  = PHP_INT_MAX;
+            $memory_txt = 'Unlimited';
+        } elseif ($memory_raw !== false && $memory_raw !== '') {
+            $bytes = wp_convert_hr_to_bytes($memory_raw);
+            if ($bytes > 0) {
+                $memory_mb  = (int) round($bytes / MB_IN_BYTES);
+                $memory_txt = size_format($bytes);
             }
         }
-
-        // Styles
-        foreach ($wp_styles->registered as $style) {
-            if (!empty($style->src)) {
-                $file = $get_local_file($style->src);
-                if ($file) {
-                    $size = filesize($file);
-                    $resources[] = ['name' => basename($file), 'size' => $size];
-                    $total_size += $size;
-                    $requests++;
-                }
-            }
-        }
-
-        usort($resources, fn($a, $b) => $b['size'] <=> $a['size']);
 
         return [
-            'requests' => $requests,
-            'size' => $total_size,
-            'largest' => array_slice($resources, 0, 5),
-            'cache' => self::detect_cache(),
-            'php_version' => PHP_VERSION,
-            'memory_limit' => WP_MEMORY_LIMIT
+            'largest'         => self::get_largest_assets(5),
+            'cache'           => self::detect_cache(),
+            'php_version'     => PHP_VERSION,
+            'memory_limit'    => $memory_txt,
+            'memory_limit_mb' => $memory_mb
         ];
+    }
+
+    /**
+     * Largest JavaScript and CSS files shipped by installed plugins, themes
+     * and mu-plugins. This is a static scan of what is installed on disk,
+     * not a measurement of what any page loads.
+     */
+    private static function get_largest_assets($limit = 5) {
+
+        $roots = [
+            'plugins'    => WP_PLUGIN_DIR,
+            'themes'     => get_theme_root(),
+            'mu-plugins' => WPMU_PLUGIN_DIR
+        ];
+
+        $skip  = ['node_modules', '.git', '.svn'];
+        $files = [];
+
+        foreach ($roots as $label => $root) {
+
+            if (!is_dir($root)) {
+                continue;
+            }
+
+            $root_path = wp_normalize_path($root);
+
+            try {
+                $dir = new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS);
+
+                $filter = new RecursiveCallbackFilterIterator($dir, function ($current) use ($skip) {
+                    if ($current->isDir()) {
+                        return !in_array($current->getFilename(), $skip, true);
+                    }
+                    $ext = strtolower($current->getExtension());
+                    return $ext === 'js' || $ext === 'css';
+                });
+
+                foreach (new RecursiveIteratorIterator($filter) as $file) {
+
+                    $files[] = [
+                        'name' => $file->getFilename(),
+                        'path' => $label . '/' . ltrim(substr(wp_normalize_path($file->getPathname()), strlen($root_path)), '/'),
+                        'size' => $file->getSize()
+                    ];
+
+                    // keep memory use flat on sites with very many assets
+                    if (count($files) > 500) {
+                        usort($files, fn($a, $b) => $b['size'] <=> $a['size']);
+                        $files = array_slice($files, 0, $limit);
+                    }
+                }
+
+            } catch (Exception $e) {
+                continue; // unreadable folder: skip it, report what we could read
+            }
+        }
+
+        usort($files, fn($a, $b) => $b['size'] <=> $a['size']);
+
+        return array_slice($files, 0, $limit);
     }
 
 
