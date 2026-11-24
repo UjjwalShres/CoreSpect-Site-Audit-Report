@@ -24,6 +24,7 @@ require_once CORESPECT_PATH . 'includes/class-performance.php';
 require_once CORESPECT_PATH . 'includes/class-health-evaluator.php';
 require_once CORESPECT_PATH . 'includes/class-data.php';
 require_once CORESPECT_PATH . 'includes/class-report.php';
+require_once CORESPECT_PATH . 'includes/class-report-view.php';
 
 
 // initialize menu only
