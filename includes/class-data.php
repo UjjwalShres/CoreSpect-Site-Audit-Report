@@ -38,6 +38,7 @@ class CoreSpect_Data {
 
             'cache_plugin' => $raw['cache']['label'],
             'cache_state'  => $raw['cache']['state'],
+            'cache_reason' => $raw['cache']['reason'],
 
             'php_version' => $raw['php_version'],
 

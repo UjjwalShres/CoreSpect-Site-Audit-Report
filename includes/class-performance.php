@@ -153,11 +153,11 @@ class CoreSpect_Performance {
 
         // Two page-cache plugins fight each other; page + object cache is fine.
         if (count($found['page']) > 1) {
-            return ['label' => implode(', ', $names), 'state' => 'warn', 'plugins' => $names];
+            return ['label' => implode(', ', $names), 'state' => 'warn', 'reason' => 'multiple', 'plugins' => $names];
         }
 
         if (count($found['page']) === 1) {
-            return ['label' => implode(', ', $names), 'state' => 'good', 'plugins' => $names];
+            return ['label' => implode(', ', $names), 'state' => 'good', 'reason' => 'ok', 'plugins' => $names];
         }
 
         // No recognised page-cache plugin, but something is caching pages.
@@ -165,13 +165,15 @@ class CoreSpect_Performance {
             return [
                 'label'   => $names ? implode(', ', $names) . ' + unrecognised page cache' : 'Unrecognised page cache',
                 'state'   => 'warn',
+                'reason'  => 'unrecognised',
                 'plugins' => $names,
             ];
         }
 
         return [
             'label'   => $names ? implode(', ', $names) . ' (no page cache)' : 'No Cache Plugin',
-            'state'   => 'bad',
+            'state'   => 'warn',   // host-level caching cannot be detected from WordPress
+            'reason'  => 'none',
             'plugins' => $names,
         ];
     }

@@ -107,7 +107,7 @@ class CoreSpect_Health {
             if($plugins > 1){
                 return [
                     'state' => 'bad',
-                    'value' => implode('<br>', $plugins),
+                    'value' => implode(', ', $plugins),
                     'tooltip' => [
                         'good' => 'Security plugin detected.',
                         'warn' => 'No security plugin detected.',
@@ -119,7 +119,7 @@ class CoreSpect_Health {
             else {
                 return [
                     'state' => 'good',
-                    'value' => implode('<br>', $plugins),
+                    'value' => implode(', ', $plugins),
                     'tooltip' => [
                         'good' => 'Security plugin detected.',
                         'warn' => 'No security plugin detected.',
@@ -141,25 +141,19 @@ class CoreSpect_Health {
     }
 
     public static function firewall_status($firewall) {
-        if ($firewall === 'Basic .htaccess rules detected') {
-            return [
-                'state' => 'good',
-                'value' => 'Basic .htaccess rules detected',
-                'tooltip' => [
-                    'good' => 'Basic .htaccess rules detected',
-                    'bad'  => 'No firewall rules detected'
-                ]
-            ];
+
+        $tooltip = [
+            'good' => 'Firewall rules from a security plugin detected',
+            'warn' => 'No dedicated firewall detected (a host or service firewall cannot be seen from here)'
+        ];
+
+        // Only firewall rules added by a security plugin count. A plain
+        // .htaccess file exists on almost every Apache site and is not a firewall.
+        if ($firewall === 'Wordfence Firewall Active') {
+            return ['state' => 'good', 'value' => $firewall, 'tooltip' => $tooltip];
         }
 
-        return [
-            'state' => 'bad',
-            'value' => 'No firewall rules detected',
-            'tooltip' => [
-                'good' => 'Basic .htaccess rules detected',
-                'bad'  => 'No firewall rules detected'
-            ]
-        ];
+        return ['state' => 'warn', 'value' => 'No dedicated firewall detected', 'tooltip' => $tooltip];
     }
 
     public static function outdated_plugins_status($count) {
@@ -176,8 +170,8 @@ class CoreSpect_Health {
             'value' => $count,
             'tooltip' => [
                 'good' => '0 outdated plugins',
-                'warn' => '1 or more outdated plugins',
-                'bad'  => '>5 outdated plugins'
+                'warn' => '1 – 3 outdated plugins',
+                'bad'  => '4 or more outdated plugins'
             ]
         ];
     }
@@ -197,8 +191,8 @@ class CoreSpect_Health {
             'value' => $count,
             'tooltip' => [
                 'good' => '0 outdated themes',
-                'warn' => '1 or more outdated themes',
-                'bad'  => '>5 outdated themes'
+                'warn' => '1 – 2 outdated themes',
+                'bad'  => '3 or more outdated themes'
             ]
         ];
     }
@@ -230,7 +224,7 @@ class CoreSpect_Health {
 
         return [
             'state' => $state,
-            'value' => implode('<br>', $login_array),
+            'value' => implode(', ', $login_array),
             'tooltip' => [
                 'good' => 'User registration is closed and .htaccess exists',
                 'warn' => 'Some login protections missing',
