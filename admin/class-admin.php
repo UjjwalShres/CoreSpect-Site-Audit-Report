@@ -533,7 +533,6 @@ class CoreSpect_Admin {
             $ht = file_get_contents(ABSPATH . '.htaccess');
 
             if (strpos($ht, 'Wordfence') !== false) return 'Wordfence Firewall Active';
-            if (strpos($ht, 'LiteSpeed') !== false) return 'LiteSpeed Server Firewall';
 
             return 'Basic .htaccess rules detected';
         }
@@ -545,15 +544,35 @@ class CoreSpect_Admin {
 
     require_once ABSPATH . 'wp-admin/includes/update.php';
 
+    if (!function_exists('get_plugins')) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+
     wp_update_plugins();
     wp_update_themes();
 
     $plugins = get_site_transient('update_plugins');
     $themes  = get_site_transient('update_themes');
 
+    $all_plugins  = get_plugins();
+    $plugin_names = [];
+
+    foreach (array_keys((array) ($plugins->response ?? [])) as $file) {
+        $plugin_names[] = $all_plugins[$file]['Name'] ?? $file;
+    }
+
+    $theme_names = [];
+
+    foreach (array_keys((array) ($themes->response ?? [])) as $stylesheet) {
+        $theme = wp_get_theme($stylesheet);
+        $theme_names[] = $theme->exists() ? $theme->get('Name') : $stylesheet;
+    }
+
     return [
-        'plugins' => count($plugins->response ?? []),
-        'themes'  => count($themes->response ?? [])
+        'plugins'      => count($plugins->response ?? []),
+        'themes'       => count($themes->response ?? []),
+        'plugin_names' => $plugin_names,
+        'theme_names'  => $theme_names
     ];
     }
 
@@ -651,7 +670,7 @@ class CoreSpect_Admin {
 
     return [
         'value' => 'Enabled',
-        'state' => 'bad'
+        'state' => 'warn'
     ];
     }
 
@@ -835,6 +854,7 @@ private static function scan_logs() {
 
             $log_files[] = [
                 'name' => $filename,
+                'path' => ltrim(str_replace(wp_normalize_path(ABSPATH), '', wp_normalize_path($file->getPathname())), '/'),
                 'size' => $size
             ];
 
@@ -873,6 +893,7 @@ private static function scan_temp() {
 private static function scan_large_files($path, $limit = 10485760) {
 
     $large = [];
+    $root  = wp_normalize_path($path);
 
     foreach (new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS)
@@ -881,14 +902,21 @@ private static function scan_large_files($path, $limit = 10485760) {
         if ($file->getSize() > $limit) {
             $large[] = [
                 'name' => $file->getFilename(),
+                'path' => ltrim(str_replace($root, '', wp_normalize_path($file->getPathname())), '/'),
                 'size' => $file->getSize()
             ];
-        }
 
-        if (count($large) >= 10) break;
+            // keep memory flat on sites with very many large files
+            if (count($large) > 100) {
+                usort($large, fn($a, $b) => $b['size'] <=> $a['size']);
+                $large = array_slice($large, 0, 10);
+            }
+        }
     }
 
-    return $large;
+    usort($large, fn($a, $b) => $b['size'] <=> $a['size']);
+
+    return array_slice($large, 0, 10);
 }
 
 /* -----------------------Plugins tab ---------------------------*/
@@ -1293,353 +1321,8 @@ private static function export_pdf($data) {
 }
 
 private static function render_html_template($data) {
-    $date = wp_date('Y-m-d H:i:s');
-    ?>
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="utf-8">
-    <title>CoreSpect Site Audit &amp; Report</title>
-
-    <?php
-        wp_register_style(
-            'corespect-export-style',
-            CORESPECT_URL . 'admin/css/export-style.css',
-            [],
-            CORESPECT_VERSION
-        );
-        wp_enqueue_style('corespect-export-style');
-
-        // This document is generated directly by an admin-post.php handler
-        // and never calls wp_head(), so the enqueued stylesheet is printed
-        // manually at this exact point instead.
-        wp_print_styles('corespect-export-style');
-    ?>
-</head>
-
-<body>
-
-    <div class="header">
-        <div class="cs-header">
-            <img class="cs-logo" src="<?php echo esc_url(CORESPECT_ADMIN_URL . 'assets/corespect-logo-white.png'); ?>">
-        </div>
-        <h1>CoreSpect Site Audit &amp; Report</h1>
-        <small>Generated on <?php echo esc_html($date); ?></small>
-    </div>
-
-    <div class="container">
-
-        <?php
-            /* =================================================
-            DATABASE
-            ================================================= */
-            $db = $data['database'];
-            ?>
-
-        <div class="section">
-            <h2>Database Overview</h2>
-
-            <div class="cards">
-                <div class="card">
-                    <h3>Total Tables</h3>
-                    <p><?php echo esc_html(count($db['tables'])); ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>Total Database Size</h3>
-                    <p><?php echo esc_html($db['total_size_mb']);  ?> MB</p>
-                </div>
-            </div>
-
-            <div class="cards cards-margin">
-                <div class="card">
-                    <h3>Overhead</h3>
-                    <p><?php echo esc_html($db['total_overhead_mb']);  ?> MB</p>
-                </div>
-
-                <div class="card">
-                    <h3>Revisions</h3>
-                    <p><?php echo esc_html($db['revisions']);  ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>Transients</h3>
-                    <p><?php echo esc_html($db['transients']);  ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>Spam Comments</h3>
-                    <p><?php echo esc_html($db['spam_comments']);  ?></p>
-                </div>
-            </div>
-
-            <h3>Database Table</h3>
-            <table>
-                <tr>
-                    <th>Table</th>
-                    <th>Rows</th>
-                    <th>Size</th>
-                </tr>
-
-                <?php foreach($db['tables'] as $t): ?>
-                <tr>
-                    <td><?php echo esc_html($t['name']); ?></td>
-                    <td><?php echo esc_html($t['rows']); ?></td>
-                    <td><?php echo esc_html($t['size']); ?></td>
-                </tr>
-                <?php endforeach; ?>
-
-                <tr class="total">
-                    <td>TOTAL</td>
-                    <td><?php echo esc_html($db['total_rows']); ?></td>
-                    <td><?php echo esc_html($db['total_size_mb']); ?> MB</td>
-                </tr>
-            </table>
-        </div>
-
-
-        <?php
-            /* =================================================
-            PERFORMANCE
-            ================================================= */
-            $perf = $data['performance'];
-            ?>
-
-        <div class="section">
-            <h2>Performance Environment</h2>
-
-            <div class="cards">
-                <div class="card">
-                    <h3>Cache</h3>
-                    <p><?php echo esc_html($perf['cache_plugin']); ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>PHP Version</h3>
-                    <p><?php echo esc_html($perf['php_version']); ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>PHP Memory Limit</h3>
-                    <p><?php echo esc_html($perf['memory_limit']); ?></p>
-                </div>
-            </div>
-
-            <h3>Largest Plugin &amp; Theme Files</h3>
-            <table>
-                <tr>
-                    <th>File</th>
-                    <th>Size</th>
-                </tr>
-
-                <?php foreach($perf['largest_resources'] as $t): ?>
-                <tr>
-                    <td><?php echo esc_html($t['path'] ?? $t['name']); ?></td>
-                    <td><?php echo esc_html(size_format($t['size'])); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        </div>
-
-
-        <?php
-            /* =================================================
-            SECURITY
-            ================================================= */
-            $s = $data['security'];
-
-            $security_plugins_status = CoreSpect_Health::security_plugins_status($s['security_plugins']);
-            $outdated_plugins_status = CoreSpect_Health::outdated_plugins_status($s['updates']['plugins']);
-            $outdated_themes_status  = CoreSpect_Health::outdated_themes_status($s['updates']['themes']);
-            $login_safety_status     = CoreSpect_Health::login_safety_status($s['login']);
-            ?>
-
-        <div class="section">
-            <h2>Security Status</h2>
-
-            <div class="cards">
-                <div class="card">
-                    <h3>Security Plugins</h3>
-                    <p class="<?php echo esc_attr(self::badge_class($security_plugins_status['state'])); ?>"><?php echo esc_html($security_plugins_status['value']); ?></p>
-                </div>
-                <div class="card">
-                    <h3>Firewall</h3>
-                    <p><?php echo esc_html($s['firewall']); ?></p>
-                </div>
-                <div class="card">
-                    <h3>Outdated Plugins</h3>
-                    <p class="<?php echo esc_attr(self::badge_class($outdated_plugins_status['state'])); ?>"><?php echo esc_html($outdated_plugins_status['value']); ?></p>
-                </div>
-                <div class="card">
-                    <h3>Outdated Themes</h3>
-                    <p class="<?php echo esc_attr(self::badge_class($outdated_themes_status['state'])); ?>"><?php echo esc_html($outdated_themes_status['value']); ?></p>
-                </div>
-                <div class="card">
-                    <h3>Login Safety</h3>
-                    <p class="<?php echo esc_attr(self::badge_class($login_safety_status['state'])); ?>"><?php echo esc_html($login_safety_status['value']); ?></p>
-                </div>
-                <div class="card">
-                    <h3>Debug Mode</h3>
-                    <p class="<?php echo esc_attr(self::badge_class($s['debug_mode']['state'])); ?>"><?php echo esc_html($s['debug_mode']['value']); ?></p>
-                </div>
-                <div class="card">
-                    <h3>File Editor</h3>
-                    <p class="<?php echo esc_attr(self::badge_class($s['file_edit']['state'])); ?>"><?php echo esc_html($s['file_edit']['value']); ?></p>
-                </div>
-            </div>
-
-            <h3>Files Worth Reviewing</h3>
-            <?php if (!empty($s['review_files'])): ?>
-            <p>PHP files do not normally belong in the uploads folder. If you do not recognise these, ask your developer or host to check them.</p>
-            <ul>
-                <?php foreach ($s['review_files'] as $file): ?>
-                <li><?php echo esc_html($file['path']); ?> (<?php echo esc_html(size_format($file['size'])); ?>)</li>
-                <?php endforeach; ?>
-            </ul>
-            <?php else: ?>
-            <p>No PHP files found in the uploads folder</p>
-            <?php endif; ?>
-        </div>
-        <?php
-            /* =================================================
-            FILES
-            ================================================= */
-            $f = $data['files'];
-            ?>
-
-        <div class="section">
-            <h2>Files Overview</h2>
-
-            <div class="cards">
-                <div class="card">
-                    <h3>Total Site Size</h3>
-                    <p><?php echo esc_html(size_format($f['total'])); ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>Uploads</h3>
-                    <p><?php echo esc_html(size_format($f['uploads'])); ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>Temp/Cache</h3>
-                    <p><?php echo esc_html(size_format($f['temp'])); ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>Log Files</h3>
-                    <p><?php echo esc_html(count($f['logs']['files'])); ?></p>
-                </div>
-            </div>
-
-            <!-- Logs Table -->
-            <?php if(!empty($f['logs']['files'])): ?>
-            <table>
-                <tr>
-                    <th>File</th>
-                    <th>Size</th>
-                </tr>
-                <?php foreach($f['logs']['files'] as $log): ?>
-                <tr>
-                    <td><?php echo esc_html($log['name']); ?></td>
-                    <td><?php echo esc_html(size_format($log['size'])); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-            <?php endif; ?>
-
-            <!-- Large Files Table -->
-            <?php if(!empty($f['large'])): ?>
-            <h3>Large Files (&gt;10MB)</h3>
-            <table>
-                <tr>
-                    <th>File</th>
-                    <th>Size</th>
-                </tr>
-                <?php foreach($f['large'] as $file): ?>
-                <tr>
-                    <td><?php echo esc_html($file['name']); ?></td>
-                    <td><?php echo esc_html(size_format($file['size'])); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-            <?php endif; ?>
-        </div>
-        <?php
-            /* =================================================
-            PLUGINS & THEMES
-            ================================================= */
-            $p = $data['plugins'];
-            ?>
-
-        <div class="section">
-            <h2>Plugins Overview</h2>
-
-            <div class="cards">
-                <div class="card">
-                    <h3>Active Plugins</h3>
-                    <p><?php echo esc_html(count(array_filter($p['plugins'], fn($pl) => $pl['active']))); ?></p>
-                </div>
-
-                <div class="card">
-                    <h3>Inactive Plugins</h3>
-                    <p><?php echo esc_html(count($p['plugins']) - count(array_filter($p['plugins'], fn($pl) => $pl['active']))); ?>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Plugins Table -->
-            <table>
-                <tr>
-                    <th>Name</th>
-                    <th>Version</th>
-                    <th>Status</th>
-                </tr>
-                <?php foreach($p['plugins'] as $pl): ?>
-                <tr>
-                    <td><?php echo esc_html($pl['name']); ?></td>
-                    <td><?php echo esc_html($pl['version']); ?></td>
-                    <td><?php echo esc_html($pl['active'] ? 'Active' : 'Inactive'); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-
-            <!-- Themes Table -->
-            <h3>Themes</h3>
-            <table>
-                <tr>
-                    <th>Name</th>
-                    <th>Version</th>
-                    <th>Status</th>
-                </tr>
-                <?php foreach($p['themes'] as $t): ?>
-                <tr>
-                    <td><?php echo esc_html($t['name']); ?></td>
-                    <td><?php echo esc_html($t['version']); ?></td>
-                    <td><?php echo esc_html($t['active'] ? 'Active' : 'Inactive'); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        </div>
-
-
-    </div>
-
-    <div class="footer">
-        Generated by CoreSpect Site Audit &amp; Report Plugin
-    </div>
-
-</body>
-
-</html>
-
-
-<?php
+    CoreSpect_Report_View::render($data);
 }
-
-
-
 
 private static function export_html($data) {
 
