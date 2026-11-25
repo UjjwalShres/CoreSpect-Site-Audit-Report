@@ -616,9 +616,10 @@ class CoreSpect_Report_View {
         $site_url  = home_url();
         $generated = wp_date('j F Y, H:i') . ' (' . wp_timezone_string() . ')';
 
-        // Optional "Prepared by" block. Agencies can supply it with the
-        // 'corespect_report_prepared_by' filter: ['name' => '...', 'logo_url' => '...'].
-        $prepared = apply_filters('corespect_report_prepared_by', []);
+        // Optional "Prepared by" block, set on the plugin's Settings tab. The
+        // 'corespect_report_prepared_by' filter can still override it:
+        // ['name' => '...', 'logo_url' => '...'].
+        $prepared = apply_filters('corespect_report_prepared_by', CoreSpect_Settings::get_prepared_by());
         $prepared_name = is_array($prepared) ? ($prepared['name'] ?? '') : '';
         $prepared_logo = is_array($prepared) ? ($prepared['logo_url'] ?? '') : '';
 
@@ -664,13 +665,15 @@ class CoreSpect_Report_View {
                 </div>
             </div>
 
-            <?php if ($prepared_name !== ''): ?>
+            <?php if ($prepared_name !== '' || $prepared_logo !== ''): ?>
             <div class="cs-prepared">
                 <span class="cs-prepared-label">Prepared by</span>
                 <?php if ($prepared_logo !== ''): ?>
-                <img class="cs-prepared-logo" src="<?php echo esc_url($prepared_logo); ?>" alt="">
+                <img class="cs-prepared-logo" src="<?php echo esc_url($prepared_logo); ?>" alt="<?php echo esc_attr($prepared_name); ?>">
                 <?php endif; ?>
+                <?php if ($prepared_name !== ''): ?>
                 <span class="cs-prepared-name"><?php echo esc_html($prepared_name); ?></span>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
         </header>
