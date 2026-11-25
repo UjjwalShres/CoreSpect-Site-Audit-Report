@@ -3,7 +3,7 @@
 Plugin Name: CoreSpect Site Audit & Report
 Plugin URI:  https://github.com/UjjwalShres/CoreSpect-Site-Audit-Report
 Description: Audits your WordPress site for database, performance, security, and file system stats, with one-click export to HTML, PDF, JSON, CSV, or TXT.
-Version:     1.1.0
+Version:     1.2.0
 Author:      Ujjwal Shrestha
 Author URI:  https://ujjwal-shrestha.com.np/
 License:     GPLv2 or later
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) exit;
 
 define('CORESPECT_PATH', plugin_dir_path(__FILE__));
 define('CORESPECT_URL', plugin_dir_url(__FILE__));
-define( 'CORESPECT_VERSION', '1.1.0' );
+define( 'CORESPECT_VERSION', '1.2.0' );
 
 // Include classes
 require_once CORESPECT_PATH . 'admin/class-admin.php';
@@ -25,17 +25,21 @@ require_once CORESPECT_PATH . 'includes/class-health-evaluator.php';
 require_once CORESPECT_PATH . 'includes/class-data.php';
 require_once CORESPECT_PATH . 'includes/class-report.php';
 require_once CORESPECT_PATH . 'includes/class-report-view.php';
+require_once CORESPECT_PATH . 'includes/class-settings.php';
 
 
 // initialize menu only
 add_action('admin_menu', ['CoreSpect_Admin', 'init']);
+
+// register the settings (Prepared by name and logo)
+add_action('admin_init', ['CoreSpect_Settings', 'register']);
 
 // register export EARLY
 add_action('admin_post_cs_export', ['CoreSpect_Admin', 'handle_export']);
 
 // quick link next to "Deactivate" on the Plugins list page.
 function corespect_add_action_links( $links ) {
-    $url = admin_url( 'tools.php?page=corespect-site-audit-report' );
+    $url = admin_url( 'tools.php?page=corespect-site-audit-report&tab=settings' );
 
     $report_link = '<a href="' . esc_url( $url ) . '">'
         . esc_html__( 'Settings', 'corespect-site-audit-report' )
