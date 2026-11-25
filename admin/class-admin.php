@@ -83,6 +83,7 @@ class CoreSpect_Admin {
         'files' => 'Files',
         'plugins' => 'Plugins',
         'export' => 'Export',
+        'settings' => 'Settings',
     ];
 
     // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab switch, not a form submission or state change.
@@ -114,13 +115,16 @@ class CoreSpect_Admin {
     }
 
     echo '</div>';
-        $refresh_url = wp_nonce_url(
-            admin_url( 'admin-post.php?action=corespect_refresh&tab=' . $current_tab ),
-            'corespect_refresh'
-        );
+        if ($current_tab !== 'settings') {
+            $refresh_url = wp_nonce_url(
+                admin_url( 'admin-post.php?action=corespect_refresh&tab=' . $current_tab ),
+                'corespect_refresh'
+            );
 
-    echo '<div class="cs-refresh-row"><a class="button" href="' . esc_url( $refresh_url ) . '">Refresh report</a></div>
-    </div>';
+            echo '<div class="cs-refresh-row"><a class="button" href="' . esc_url( $refresh_url ) . '">Refresh report</a></div>';
+        }
+
+    echo '</div>';
 
     echo '<div class="wrap corespect-wrap">';
 
@@ -133,6 +137,7 @@ class CoreSpect_Admin {
         case 'files': self::render_files_tab(); break;
         case 'plugins': self::render_plugins_tab(); break;
         case 'export': self::render_export_tab(); break;
+        case 'settings': CoreSpect_Settings::render_tab(); break;
     }
 
     echo '</div></div>';
@@ -307,6 +312,27 @@ class CoreSpect_Admin {
             ]
             );
         self::card('Load Time', 'Test Needed', 'warn');
+        self::card(
+                'PHP Version',
+                $data['php_version'],
+                $php_health['state'],
+                [
+                    'good' => '>= 8.1',
+                    'warn' => '8.0',
+                    'bad'  => '< 8.0'
+                ]
+            );
+
+        self::card(
+                'PHP Memory Limit',
+                $data['memory_limit'],
+                $memory_health['state'],
+                [
+                    'good' => '>= 256MB',
+                    'warn' => '128MB – 255MB',
+                    'bad'  => '< 128MB'
+                ]
+            );
 
         echo '</div>';
 
@@ -362,7 +388,7 @@ class CoreSpect_Admin {
 
     </div>
 
-    <div class="bar-side-section">
+    <!-- <div class="bar-side-section">
         <?php 
             self::card(
                 'PHP Version',
@@ -386,7 +412,7 @@ class CoreSpect_Admin {
                 ]
             );
             ?>
-    </div>
+    </div> -->
 
 </div>
 
@@ -1063,6 +1089,8 @@ private static function compatibility_check() {
         echo '<div class="cs-export-large-sec">';
             echo '<h2>Export Report</h2>';
 
+            echo '<p class="description">To show your name or agency at the top of exported reports, add it under <a href="' . esc_url(admin_url('tools.php?page=corespect-site-audit-report&tab=settings')) . '">Settings</a>.</p>';
+
             echo '<div class="cs-export-options">
             <label>
                 <input type="radio" name="cs_export_type" value="html" checked>
@@ -1348,13 +1376,30 @@ CORESPECT_URL . 'admin/css/admin-style.css',
 CORESPECT_VERSION
 );
 
-/* script enqueue */
-wp_enqueue_script(
-    'cs-export-js',
-    CORESPECT_URL . 'admin/js/export.js',
-    [],
-    CORESPECT_VERSION,
-    true
-);
+/* script enqueue: each script only on the tab that uses it */
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab check, no state change.
+$corespect_tab = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'db';
+
+if ($corespect_tab === 'export') {
+    wp_enqueue_script(
+        'cs-export-js',
+        CORESPECT_URL . 'admin/js/export.js',
+        [],
+        CORESPECT_VERSION,
+        true
+    );
+}
+
+if ($corespect_tab === 'settings') {
+    wp_enqueue_media();
+
+    wp_enqueue_script(
+        'corespect-settings-js',
+        CORESPECT_URL . 'admin/js/settings.js',
+        ['jquery'],
+        CORESPECT_VERSION,
+        true
+    );
+}
 
 });
