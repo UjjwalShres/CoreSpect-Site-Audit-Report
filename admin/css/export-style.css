@@ -1,152 +1,534 @@
-/* ===============================
-        GLOBAL
-        ================================ */
+/* =====================================================
+   CoreSpect report - screen + print
+   Light theme on purpose: browsers drop background colours
+   when printing, so meaning is carried by text, symbols
+   and borders, never by colour alone.
+   ===================================================== */
+
+:root {
+    --cs-text: #1f2933;
+    --cs-muted: #5b6676;
+    --cs-line: #d9dee5;
+    --cs-soft: #f4f6f9;
+    --cs-accent: #ff914d;
+
+    --cs-good: #137a3d;
+    --cs-good-tint: #e8f5ec;
+    --cs-warn: #a15c07;
+    --cs-warn-tint: #fdf1de;
+    --cs-bad: #b42318;
+    --cs-bad-tint: #fcebe9;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
 body {
     margin: 0;
-    font-family: Inter, Arial, sans-serif;
-    background: #F0F0F1;
-    color: #e5e7eb;
+    background: #eef0f3;
+    color: var(--cs-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-/* ===============================
-        HEADER
-        ================================ */
-.header {
-    padding: 40px;
-    text-align: center;
-    background-color: #fff;
-    color: #111;
+.cs-hint {
+    max-width: 880px;
+    margin: 16px auto 0;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--cs-muted);
+    background: #fff;
+    border: 1px solid var(--cs-line);
+    border-radius: 6px;
 }
 
-h2,
-h3 {
-    color: #181C25;
+.cs-page {
+    max-width: 880px;
+    margin: 16px auto 40px;
+    padding: 44px 48px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
 }
 
-.card h3 {
-    color: #e5e7eb;
+/* ---------- header ---------- */
+
+.cs-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--cs-accent);
 }
 
-.header h1 {
-    margin: 0;
-    font-size: 34px;
-    font-weight: 700;
+.cs-brand {
+    display: flex;
+    align-items: center;
+    gap: 18px;
 }
 
-.header small {
-    opacity: .8;
+.cs-brand > div {
+    flex: 1;
+    min-width: 0;
+}
+
+.cs-brand {
+    flex: 1;
+    min-width: 0;
 }
 
 .cs-logo {
-    width: 78px;
-    height: 78px;
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
 }
 
-/* ===============================
-        LAYOUT
-        ================================ */
-.container {
-    padding: 40px;
-    max-width: 1200px;
-    margin: auto;
+.cs-report-kicker {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--cs-muted);
 }
 
-.section {
-    margin-bottom: 50px;
+.cs-report-title {
+    margin: 2px 0 0;
+    font-size: 28px;
+    line-height: 1.2;
 }
 
-.section h2 {
-    font-size: 20px;
-    margin-bottom: 15px;
-    border-left: 5px solid #ff914d;
-    padding-left: 10px;
+.cs-report-url {
+    color: var(--cs-muted);
 }
 
-/* ===============================
-        CARDS
-        ================================ */
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
+.cs-prepared {
+    text-align: right;
+    font-size: 13px;
+    color: var(--cs-muted);
 }
 
-.cards-margin {
-    margin-top: 15px;
+.cs-prepared-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
 }
 
-.card {
-    background: #181c25;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 0 1px #222;
+.cs-prepared-name {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--cs-text);
 }
 
-.card h3 {
-    margin: 0 0 8px;
-    font-size: 14px;
-    opacity: .7;
+.cs-prepared-logo {
+    max-width: 120px;
+    max-height: 48px;
 }
 
-.card p {
-    font-size: 20px;
+.cs-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 32px;
+    margin: 14px 0 0;
+    padding: 0;
+}
+
+.cs-meta div {
+    display: flex;
+    gap: 6px;
+}
+
+.cs-meta dt {
+    color: var(--cs-muted);
+}
+
+.cs-meta dt::after {
+    content: ":";
+}
+
+.cs-meta dd {
+    margin: 0;
     font-weight: 600;
+}
+
+/* ---------- headings ---------- */
+
+.cs-h2 {
+    margin: 0 0 6px;
+    padding-left: 10px;
+    border-left: 5px solid var(--cs-accent);
+    font-size: 21px;
+    line-height: 1.3;
+    break-after: avoid;
+}
+
+.cs-h3 {
+    margin: 22px 0 10px;
+    font-size: 16px;
+    break-after: avoid;
+}
+
+.cs-intro {
+    margin: 0 0 16px 15px;
+    color: var(--cs-muted);
+    break-after: avoid;
+}
+
+.cs-section,
+.cs-summary {
+    margin-top: 34px;
+}
+
+.cs-summary {
+    margin-top: 26px;
+}
+
+/* ---------- status chips ---------- */
+
+.cs-chip {
+    display: inline-block;
+    padding: 1px 9px 1px 7px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+.cs-chip-icon {
+    font-weight: 800;
+}
+
+.cs-chip-good {
+    color: var(--cs-good);
+    background: var(--cs-good-tint);
+}
+
+.cs-chip-warn {
+    color: var(--cs-warn);
+    background: var(--cs-warn-tint);
+}
+
+.cs-chip-bad {
+    color: var(--cs-bad);
+    background: var(--cs-bad-tint);
+}
+
+/* ---------- summary ---------- */
+
+.cs-tiles {
+    display: flex;
+    gap: 14px;
+    margin: 12px 0 0 15px;
+}
+
+.cs-tile {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1px solid var(--cs-line);
+    border-top-width: 4px;
+    border-radius: 6px;
+    break-inside: avoid;
+}
+
+.cs-tile-bad {
+    border-top-color: var(--cs-bad);
+}
+
+.cs-tile-warn {
+    border-top-color: var(--cs-warn);
+}
+
+.cs-tile-good {
+    border-top-color: var(--cs-good);
+}
+
+.cs-tile-number {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.cs-tile-bad .cs-tile-number {
+    color: var(--cs-bad);
+}
+
+.cs-tile-warn .cs-tile-number {
+    color: var(--cs-warn);
+}
+
+.cs-tile-good .cs-tile-number {
+    color: var(--cs-good);
+}
+
+.cs-tile-label {
+    color: var(--cs-muted);
+    font-weight: 600;
+}
+
+.cs-attention {
+    margin: 0 0 0 15px;
+    padding: 0;
+    list-style: none;
+}
+
+.cs-attention li {
+    margin: 0 0 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--cs-line);
+    border-left-width: 4px;
+    border-radius: 4px;
+    break-inside: avoid;
+}
+
+.cs-attention-bad {
+    border-left-color: var(--cs-bad) !important;
+}
+
+.cs-attention-warn {
+    border-left-color: var(--cs-warn) !important;
+}
+
+.cs-attention-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+}
+
+.cs-attention-value {
+    color: var(--cs-muted);
+}
+
+.cs-attention-head .cs-chip {
+    margin-left: auto;
+}
+
+.cs-attention-section {
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--cs-muted);
+}
+
+.cs-attention-action {
+    margin-top: 2px;
+}
+
+.cs-all-good {
+    margin: 14px 0 0 15px;
+    padding: 12px 14px;
+    border: 1px solid var(--cs-good);
+    border-radius: 6px;
+    color: var(--cs-good);
+    font-weight: 600;
+}
+
+/* ---------- check cards ---------- */
+
+.cs-items {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-left: 15px;
+}
+
+.cs-item {
+    padding: 12px 14px;
+    border: 1px solid var(--cs-line);
+    border-left-width: 4px;
+    border-radius: 6px;
+    break-inside: avoid;
+}
+
+.cs-item-good {
+    border-left-color: var(--cs-good);
+}
+
+.cs-item-warn {
+    border-left-color: var(--cs-warn);
+}
+
+.cs-item-bad {
+    border-left-color: var(--cs-bad);
+}
+
+.cs-item-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.cs-item-title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--cs-muted);
+}
+
+.cs-item-value {
+    margin: 4px 0 6px;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.cs-item-what,
+.cs-item-action {
+    margin: 0 0 6px;
+    font-size: 12.5px;
+}
+
+.cs-item-what {
+    color: var(--cs-muted);
+}
+
+.cs-item-action {
+    padding-top: 6px;
+    border-top: 1px dashed var(--cs-line);
+}
+
+.cs-item-detail {
+    margin: 0 0 6px;
+    padding-left: 18px;
+    font-size: 12.5px;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- tables ---------- */
+
+.cs-table-block {
+    margin: 24px 0 0 15px;
+}
+
+.cs-table-title {
+    margin: 0 0 4px;
+    font-size: 15px;
+    break-after: avoid;
+}
+
+.cs-table-note {
+    margin: 0 0 8px;
+    font-size: 12.5px;
+    color: var(--cs-muted);
+    break-after: avoid;
+}
+
+.cs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.cs-table thead {
+    display: table-header-group;
+}
+
+.cs-table tr {
+    break-inside: avoid;
+}
+
+.cs-table th,
+.cs-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--cs-line);
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.cs-table th {
+    background: var(--cs-soft);
+    border-top: 1px solid var(--cs-line);
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--cs-muted);
+}
+
+.cs-num {
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+.cs-total td {
+    font-weight: 800;
+    border-top: 2px solid var(--cs-text);
+}
+
+/* ---------- appendix + footer ---------- */
+
+.cs-appendix {
+    break-before: page;
+}
+
+.cs-footer {
+    margin-top: 40px;
+    padding-top: 14px;
+    border-top: 1px solid var(--cs-line);
+    font-size: 11.5px;
+    color: var(--cs-muted);
+}
+
+.cs-footer p {
     margin: 0;
 }
 
-/* ===============================
-        TABLE
-        ================================ */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: #181c25;
-    border-radius: 10px;
-    overflow: hidden;
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 640px) {
+    .cs-page {
+        padding: 24px 18px;
+    }
+
+    .cs-items {
+        grid-template-columns: 1fr;
+    }
+
+    .cs-tiles {
+        flex-direction: column;
+    }
+
+    .cs-report-header {
+        flex-direction: column;
+    }
 }
 
-th,
-td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #222;
-    font-size: 14px;
+/* ---------- print ---------- */
+
+@page {
+    size: A4;
+    margin: 14mm 12mm;
 }
 
-th {
-    text-align: left;
-    background: #20242f;
-}
+@media print {
 
-tr:last-child td {
-    border-bottom: none;
-}
+    body {
+        background: #fff;
+        font-size: 12px;
+    }
 
-.total {
-    font-weight: 700;
-    color: #ff914d;
-}
+    .cs-page {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
 
-/* badges */
-.badge-ok {
-    color: #22c55e;
-    font-weight: 600;
-}
-
-.badge-bad {
-    color: #ef4444;
-    font-weight: 600;
-}
-
-.badge-warn {
-    color: #f59e0b;
-    font-weight: 600;
-}
-
-.footer {
-    text-align: center;
-    padding: 30px;
-    opacity: .5;
-    font-size: 12px;
-    color: #181C25;
+    .cs-no-print {
+        display: none !important;
+    }
 }

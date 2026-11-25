@@ -14,6 +14,8 @@
   margin: 20px 20px 20px 0;
   padding: 20px;
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
   justify-content: space-between;
   border-radius: 20px;
 }
@@ -40,7 +42,8 @@
 
 .cs-tabs {
   display: flex;
-  gap: 30px;
+  flex-wrap: wrap;
+  gap: 8px 30px;
   align-items: center;
   margin-right: 20px;
 }
@@ -54,7 +57,7 @@
   font-size: 20px;
 }
 
-.cs-tab:focus{
+.cs-tab:focus {
   outline: none;
   color: #ff914d;
   box-shadow: none;
@@ -73,17 +76,17 @@
 }
 
 .cs-refresh-row {
-    display: flex;
-    text-align: right;
-    align-items: center;
+  display: flex;
+  text-align: right;
+  align-items: center;
 }
 
-.cs-refresh-row .button{
+.cs-refresh-row .button {
   color: #ff914d;
   border-color: #ff914d;
 }
 
-.cs-refresh-row:hover .button{
+.cs-refresh-row:hover .button {
   color: #e0722e;
   border-color: #e0722e;
 }
@@ -184,18 +187,18 @@
 }
 
 .cs-tooltip-icon-good {
-    color: yellowgreen;
-    border: 1px solid yellowgreen;
+  color: yellowgreen;
+  border: 1px solid yellowgreen;
 }
 
 .cs-tooltip-icon-warn {
-    color: #ff914d;
-    border: 1px solid #ff914d;
+  color: #ff914d;
+  border: 1px solid #ff914d;
 }
 
 .cs-tooltip-icon-bad {
-    color: red;
-    border: 1px solid red;
+  color: red;
+  border: 1px solid red;
 }
 
 /* Hidden tooltip content */
@@ -219,19 +222,19 @@
   z-index: 3;
 }
 
-.cs-tooltip-content .good{
+.cs-tooltip-content .good {
   color: yellowgreen;
 }
 
-.cs-tooltip-content .warn{
+.cs-tooltip-content .warn {
   color: orange;
 }
 
-.cs-tooltip-content .bad{
+.cs-tooltip-content .bad {
   color: red;
 }
 
-.cs-tooltip-content p{
+.cs-tooltip-content p {
   margin: 0;
 }
 
@@ -301,78 +304,78 @@
 }
 
 /* --------------------- bar chart ---------------------------*/
-.bar-chart-section{
+.bar-chart-section {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 16px;
 }
 
-.bar-chart-section h3{
+.bar-chart-section h3 {
   font-size: 16px;
   margin-bottom: 20px;
   color: #666;
   text-align: center;
 }
 
-.bar-chart{
-  grid-column: 1 / span 3;
+.bar-chart {
+  grid-column: 1 / 6;
   border: 2px solid #2a2e30;
   padding: 20px 20px 40px 20px;
   border-radius: 12px;
 }
 
 .chart-container {
-    display: flex;
-    align-items: flex-end; /* Align bars to the bottom */
-    gap: 10px;
-    border-bottom: 1px solid #2a2e30;
+  display: flex;
+  align-items: flex-end; /* Align bars to the bottom */
+  gap: 10px;
+  border-bottom: 1px solid #2a2e30;
 }
 
 .chart-y-axis {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* distribute labels evenly */
-    text-align: right;
-    margin-right: 10px;
-    height: 300px; /* same as chart-bars */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* distribute labels evenly */
+  text-align: right;
+  margin-right: 10px;
+  height: 300px; /* same as chart-bars */
 }
 
 .chart-y-axis .y-label {
-    position: relative;
-    font-size: 12px;
-    width: 40px;
-    padding-right: 5px;
+  position: relative;
+  font-size: 12px;
+  width: 40px;
+  padding-right: 5px;
 }
 
-.chart-y-axis{
+.chart-y-axis {
   border-right: 1px solid #2a2e30;
 }
 
 .chart-bars {
-    display: flex;
-    align-items: flex-end; /* bars start from bottom */
-    gap: 26px;
-    height: 300px; /* same as y-axis */
-    flex: 1;
-    position: relative;
+  display: flex;
+  align-items: flex-end; /* bars start from bottom */
+  gap: 26px;
+  height: 300px; /* same as y-axis */
+  flex: 1;
+  position: relative;
 }
 
 .bar {
-    background-color: #ff914d;
-    width: 150px;
-    display: flex;
-    align-items: flex-end; /* bar value sits on top */
-    justify-content: center;
-    position: relative;
+  background-color: #ff914d;
+  width: 150px;
+  display: flex;
+  align-items: flex-end; /* bar value sits on top */
+  justify-content: center;
+  position: relative;
 }
 
 .bar-value {
-    font-size: 12px;
-    color: #000;
-    margin-bottom: 4px;
+  font-size: 12px;
+  color: #000;
+  margin-bottom: 4px;
 }
 
-.bar-label-group{
+.bar-label-group {
   position: absolute;
   width: 100%;
   display: flex;
@@ -380,31 +383,31 @@
   bottom: -27px;
 }
 
-.bar-label{
+.bar-label {
   width: 150px;
 }
 
-.bar-side-section{
+.bar-side-section {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
 /*===================Security tab =================================*/
-.cs-security-large-section{
+.cs-security-large-section {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 72px 1fr 1fr;
   gap: 16px;
 }
 
-.cs-suspicious-list{
+.cs-suspicious-list {
   grid-column: 1 / span 4;
   border: 2px solid #2a2e30;
   padding: 20px 20px 40px 20px;
   border-radius: 12px;
 }
 
-.cs-suspicious-list ul li{
+.cs-suspicious-list ul li {
   border: 1px solid #2a2e30;
   margin-bottom: 10px;
   padding: 10px;
@@ -416,7 +419,7 @@
   background-color: #ff914d;
 }
 
-.cs-security-side-section{
+.cs-security-side-section {
   grid-column: 5 / span 6;
   display: flex;
   flex-direction: column;
@@ -424,20 +427,20 @@
 }
 
 /*===================Files tab =================================*/
-.cs-files-large-section{
+.cs-files-large-section {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 72px 1fr 1fr;
   gap: 16px;
 }
 
-.cs-log-list{
+.cs-log-list {
   grid-column: 1 / span 4;
   border: 2px solid #2a2e30;
   padding: 20px 20px 40px 20px;
   border-radius: 12px;
 }
 
-.cs-log-list ul li{
+.cs-log-list ul li {
   border: 1px solid #2a2e30;
   margin-bottom: 10px;
   padding: 10px;
@@ -449,7 +452,7 @@
   background-color: #ff914d;
 }
 
-.cs-files-side-section{
+.cs-files-side-section {
   grid-column: 5 / span 6;
   display: flex;
   flex-direction: column;
@@ -485,78 +488,83 @@
 }
 
 /*===================Plugins tab =================================*/
-.cs-table-container{
+.cs-table-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 16px;
 }
 
-.cs-first-table-card{
+.cs-first-table-card {
   grid-column: 1 / span 2;
   border: 2px solid #2a2e30;
   padding: 20px 20px 40px 20px;
   border-radius: 12px;
 }
 
-.cs-second-table-card{
+.cs-second-table-card {
   grid-column: 3 / span 4;
   border: 2px solid #2a2e30;
   padding: 20px 20px 40px 20px;
   border-radius: 12px;
 }
 
-.cs-plugin-table, .cs-theme-table {
+.cs-plugin-table,
+.cs-theme-table {
   width: 100%;
   height: auto;
 }
 
-.cs-plugin-table{
+.cs-plugin-table {
   border-collapse: collapse;
 }
 
-.cs-plugin-table th, .cs-theme-table th{
+.cs-plugin-table th,
+.cs-theme-table th {
   background-color: #2a2e30;
   color: white;
   padding: 10px;
   text-align: left;
 }
 
-.cs-plugin-table td, .cs-theme-table td{
+.cs-plugin-table td,
+.cs-theme-table td {
   background-color: white;
   color: #2a2e30;
   padding: 10px;
 }
 
-.cs-plugin-table .cs-plugin-active, .cs-theme-table .cs-theme-active{
+.cs-plugin-table .cs-plugin-active,
+.cs-theme-table .cs-theme-active {
   color: green;
 }
 
-.cs-plugin-table .cs-plugin-inactive, .cs-theme-table .cs-theme-inactive{
+.cs-plugin-table .cs-plugin-inactive,
+.cs-theme-table .cs-theme-inactive {
   color: #e0722e;
 }
 
 /*===================Export tab =================================*/
-.cs-export-container{
+.cs-export-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 16px;
 }
 
-.cs-export-large-sec{
+.cs-export-large-sec {
   grid-column: 1 / span 3;
   border: 2px solid #2a2e30;
   padding: 20px 20px 40px 20px;
   border-radius: 12px;
 }
 
-.cs-export-small-sec{
+.cs-export-small-sec {
   grid-column: 4 / span 4;
   border: 2px solid #2a2e30;
   padding: 20px 20px 40px 20px;
   border-radius: 12px;
 }
 
-.cs-export-container h2{
+.cs-export-container h2 {
   font-size: 32px;
   font-weight: 600;
   margin: 0;
@@ -564,25 +572,24 @@
   margin-bottom: 25px;
   font-family: "DM Serif Display", serif;
   line-height: normal;
-
 }
 
-.cs-export-small-sec h2{
-    text-align: center;
+.cs-export-small-sec h2 {
+  text-align: center;
 }
 
 .cs-export-small-sec a {
   text-decoration: none;
 }
 
-.cs-links-sec{
+.cs-links-sec {
   padding: 5px 15px;
   border: #2a2e30 solid 2px;
   margin-bottom: 10px;
   border-radius: 12px;
 }
 
-.cs-links-sec:hover{
+.cs-links-sec:hover {
   background-color: white;
   cursor: pointer;
 }
@@ -594,7 +601,7 @@
   text-align: center;
 }
 
-.cs-links-sec span::before{
+.cs-links-sec span::before {
   font-size: 90px;
   font-family: "DM Serif Display", serif;
   position: absolute;
@@ -602,7 +609,7 @@
   pointer-events: none;
 }
 
-.cs-links-sec .icon-alert::before{
+/* .cs-links-sec .icon-alert::before{
   content: "!";
   color: #ffd0b3;
   right: 20%;
@@ -621,9 +628,7 @@
   color: #ceeac2;
   right: 17%;
   top: 75%;
-}
-
-
+} */
 
 /* .cs-export-options {
   display: flex;
@@ -644,7 +649,7 @@
   gap: 8px;
 } */
 
-.cs-export-options input[type=radio]:checked::before{
+/* .cs-export-options input[type="radio"]:checked::before {
   content: "✓";
   color: #e0722e;
   font-size: 25px;
@@ -654,13 +659,13 @@
   margin: 0;
   background: none;
   line-height: 0;
-}
+} */
 
 .cs-export-options label {
   margin-right: 15px;
 }
 
-.cs-export-actions{
+.cs-export-actions {
   margin-top: 20px;
 }
 /* Selected state */
@@ -669,3 +674,26 @@
   border-color: #ff914d;
   background: #fff4ec;
 } */
+
+/* ===============================
+   SETTINGS TAB
+================================ */
+
+.cs-settings {
+  max-width: 760px;
+}
+
+.cs-logo-preview {
+  display: block;
+  max-width: 160px;
+  max-height: 64px;
+  margin: 0 0 10px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+}
+
+.cs-logo-preview.is-empty {
+  display: none;
+}
